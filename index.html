@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>방송 화면 시계 자막 (지코쿠 효지) 크로마키 스튜디오</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- 방송/디지털 전용 구글 웹폰트 폴백 로드 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;700&family=Orbitron:wght@600;800;900&family=Share+Tech+Mono&family=Noto+Sans+KR:wght@500;700;900&family=Black+Han+Sans&display=swap" rel="stylesheet">
+  
+  <style>
+    /* GitHub Hosain1291/clocktitle 리포지토리 웹폰트 및 로컬/CDN 경로 완벽 매핑 */
+    @font-face {
+      font-family: 'BetaflightLarge';
+      src: url('https://cdn.jsdelivr.net/gh/Hosain1291/clocktitle@main/BetaflightOSDLargeFill.woff') format('woff'),
+           url('https://raw.githubusercontent.com/Hosain1291/clocktitle/main/BetaflightOSDLargeFill.woff') format('woff'),
+           url('BetaflightOSDLargeFill.woff') format('woff'),
+           url('betaflight-designer-fonts-main/output/large/fonts/woff/BetaflightOSDLargeFill.woff') format('woff');
+      font-weight: 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'BetaflightDigital';
+      src: url('https://cdn.jsdelivr.net/gh/Hosain1291/clocktitle@main/BetaflightOSDClarityFill.woff') format('woff'),
+           url('https://raw.githubusercontent.com/Hosain1291/clocktitle/main/BetaflightOSDClarityFill.woff') format('woff'),
+           url('BetaflightOSDClarityFill.woff') format('woff'),
+           url('https://cdn.jsdelivr.net/gh/Hosain1291/clocktitle@main/BetaflightOSDDigitalFill.woff') format('woff'),
+           url('betaflight-designer-fonts-main/output/digital/fonts/woff/BetaflightOSDDigitalFill.woff') format('woff');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'SeochoDotum';
+      src: url('SeochoDotum-Font/fonts/SeochoDotum-Regular.woff2') format('woff2'),
+           url('seochoDotum-Font/fonts/SeochoDotum-Regular.woff2') format('woff2'),
+           url('SeochoDotum-Regular.woff2') format('woff2');
+      font-weight: normal;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* 슬라이더 및 커스텀 스크롤바 */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #1e293b;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #475569;
+      border-radius: 9999px;
+    }
+
+    /* 방송 스타일 1: 90년대 레트로 볼드 아웃라인 (사진 1 스타일: 4:26) */
+    .style-retro-bold {
+      font-family: 'BetaflightLarge', 'Orbitron', 'Black Han Sans', sans-serif !important;
+      font-weight: 900;
+      letter-spacing: 0.05em;
+      color: #ffffff;
+      text-shadow: 
+        -2px -2px 0 #111,  2px -2px 0 #111,
+        -2px  2px 0 #111,  2px  2px 0 #111,
+        -3px  0px 0 #111,  3px  0px 0 #111,
+         0px -3px 0 #111,  0px  3px 0 #111,
+         0px  3px 6px rgba(0, 0, 0, 0.9);
+      filter: drop-shadow(1px 1px 1px rgba(255,255,255,0.4));
+    }
+
+    /* 방송 스타일 2: 각진 모던 디지털 OSD (사진 2 스타일: 7:07) */
+    .style-digital-osd {
+      font-family: 'BetaflightDigital', 'Chakra Petch', 'Share Tech Mono', monospace !important;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      color: #ebffff;
+      text-shadow:
+        -1.5px -1.5px 0 #0f172a, 1.5px -1.5px 0 #0f172a,
+        -1.5px  1.5px 0 #0f172a, 1.5px  1.5px 0 #0f172a,
+        0 0 10px rgba(56, 189, 248, 0.4);
+    }
+
+    /* 방송 스타일 3: 일본 아침 뉴스 지코쿠 효지 (사진 3 스타일: 17(日) 6:59.56) */
+    .style-morning-news {
+      font-family: 'BetaflightLarge', 'Noto Sans KR', sans-serif !important;
+      font-weight: 900;
+      line-height: 1;
+      color: #ffffff;
+      text-shadow:
+        -2.5px -2.5px 0 #000, 2.5px -2.5px 0 #000,
+        -2.5px  2.5px 0 #000, 2.5px  2.5px 0 #000,
+        -3px 0 0 #000, 3px 0 0 #000,
+        0 -3px 0 #000, 0 3px 0 #000,
+        0 4px 10px rgba(0,0,0,0.85);
+    }
+
+    .style-morning-news .sub-date {
+      font-family: 'SeochoDotum', 'Noto Sans KR', sans-serif !important;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+    }
+
+    /* CRT 브라운관 스캔라인 효과 (옵션) */
+    .crt-overlay::before {
+      content: " ";
+      display: block;
+      position: absolute;
+      top: 0; left: 0; bottom: 0; right: 0;
+      background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
+      z-index: 20;
+      background-size: 100% 3px, 6px 100%;
+      pointer-events: none;
+    }
+
+    /* 시계 단독 뷰 및 전체화면 전용 스타일 */
+    .clean-mode header,
+    .clean-mode section:last-child,
+    .clean-mode #viewportFooter,
+    .clean-mode #viewportHeader {
+      display: none !important;
+    }
+
+    .clean-mode main {
+      padding: 0 !important;
+      max-width: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      height: 100vh !important;
+    }
+
+    .clean-mode section:first-child {
+      width: 100% !important;
+      height: 100% !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .clean-mode #canvasContainerWrapper {
+      border: none !important;
+      background: transparent !important;
+      padding: 0 !important;
+      width: 100vw !important;
+      height: 100vh !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+    }
+
+    .clean-mode #canvasWrapper {
+      border-radius: 0 !important;
+      border: none !important;
+      max-height: 100vh !important;
+      height: 100% !important;
+      width: auto !important;
+    }
+
+    /* 시계 단독 뷰 해제 플로팅 버튼 */
+    #exitCleanBtn {
+      display: none;
+    }
+    .clean-mode #exitCleanBtn {
+      display: flex;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans select-none">
+  <!-- 시계 단독 뷰 종료 버튼 (단독 모드 활성화 시 화면 우상단에 표시) -->
+  <button id="exitCleanBtn" class="fixed top-4 right-4 z-50 px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-black/70 hover:bg-black/90 text-white border border-white/30 backdrop-blur items-center gap-1.5 shadow-xl transition opacity-40 hover:opacity-100">
+    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+    <span>설정창 복귀 (ESC)</span>
+  </button>
+
+  <header class="bg-slate-900/90 backdrop-blur border-b border-slate-800 px-6 py-3 flex items-center justify-between sticky top-0 z-50">
+    <div class="flex items-center space-x-3">
+      <div class="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-base font-bold text-slate-100 flex items-center gap-2">
+          방송 화면 시계 자막 (時刻表示) 스튜디오
+          <span id="aspectBadge" class="text-xs bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-mono font-medium">16:9 크로마키</span>
+        </h1>
+        <p class="text-xs text-slate-400">GitHub Hosain1291/clocktitle 전용 웹폰트 및 커스텀 시간 실시간 순환 연동</p>
+      </div>
+    </div>
+    <!-- 상단 퀵 버튼 -->
+    <div class="flex items-center gap-2">
+      <div class="flex items-center bg-slate-800 rounded-lg p-0.5 border border-slate-700">
+        <button id="btnAspect169" class="aspect-btn active px-2.5 py-1 text-xs font-semibold rounded bg-emerald-500 text-white transition">16:9</button>
+        <button id="btnAspect43" class="aspect-btn px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white transition">4:3</button>
+        <button id="btnAspect54" class="aspect-btn px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white transition">5:4</button>
+      </div>
+      
+      <!-- 신규: 시계만 보기 & 전체화면 버튼 -->
+      <button id="cleanModeBtn" title="시계만 단독으로 화면에 꽉 차게 띄웁니다" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600/80 hover:bg-emerald-500 text-white border border-emerald-500/40 flex items-center gap-1.5 transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+        </svg>
+        <span>시계만 보기</span>
+      </button>
+
+      <button id="fullscreenBtn" title="캔버스 전체화면 실행" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 flex items-center gap-1.5 transition">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+        <span>전체화면</span>
+      </button>
+
+      <button id="toggleGuideBtn" class="px-3 py-1.5 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 transition">
+        안전선
+      </button>
+      <button id="recordBtn" class="px-4 py-1.5 rounded-lg text-xs font-semibold bg-red-600 hover:bg-red-500 text-white flex items-center gap-2 shadow-lg shadow-red-600/30 transition">
+        <span id="recordDot" class="w-2.5 h-2.5 rounded-full bg-white animate-pulse"></span>
+        <span id="recordText">크로마키 MP4 녹화 (10초)</span>
+      </button>
+    </div>
+  </header>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+    
+    <!-- 좌측: 뷰포트 프리뷰 영역 (7칼럼) -->
+    <section class="lg:col-span-7 flex flex-col gap-4">
+      <div id="viewportHeader" class="flex items-center justify-between text-xs text-slate-400 px-1">
+        <span class="flex items-center gap-2 font-mono">
+          <span class="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span id="canvasResLabel">16:9 BROADCAST CANVAS (1920 × 1080)</span>
+        </span>
+        <span id="currentStatusLabel" class="font-mono text-slate-400">상태: 폰트 적용 완료</span>
+      </div>
+
+      <!-- 화면 컨테이너 (16:9, 4:3, 5:4 비율 전환 가능) -->
+      <div id="canvasContainerWrapper" class="flex justify-center w-full bg-slate-950/80 p-2 rounded-2xl border border-slate-800/80">
+        <div class="relative w-full aspect-video bg-emerald-600 rounded-xl overflow-hidden shadow-2xl border border-slate-800 transition-all max-h-[620px]" id="canvasWrapper">
+          
+          <!-- 실시간 시계가 그려질 숨김 고화질 레코딩 캔버스 -->
+          <canvas id="exportCanvas" width="1920" height="1080" class="hidden"></canvas>
+
+          <!-- 방송 안전선 가이드 (Title Safe Area: 90% & 80%) -->
+          <div id="safeAreaGuides" class="absolute inset-0 pointer-events-none">
+            <div class="absolute inset-[5%] border border-dashed border-white/20 flex flex-col justify-between p-2">
+              <span class="text-[9px] font-mono text-white/40 tracking-wider">ACTION SAFE (90%)</span>
+            </div>
+            <div class="absolute inset-[10%] border border-dashed border-yellow-400/30 flex flex-col justify-between p-2">
+              <span class="text-[9px] font-mono text-yellow-300/40 tracking-wider">TITLE SAFE (80% - 표준 시계 위치)</span>
+            </div>
+          </div>
+
+          <!-- CRT 브라운관 필터 레이어 -->
+          <div id="crtOverlay" class="crt-overlay absolute inset-0 opacity-0 transition-opacity pointer-events-none"></div>
+
+          <!-- 방송 시계 자막 렌더러 엘리먼트 (드래그 및 좌표 이동 가능) -->
+          <div id="clockWidget" class="absolute top-[8%] left-[8%] transition-all duration-75 cursor-move group">
+            <!-- 위치 가이드 마커 (호버 시 표시) -->
+            <div class="absolute -top-4 -left-1 text-[9px] font-mono bg-black/75 px-1 rounded text-emerald-400 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+              X: <span id="labelX">8</span>% Y: <span id="labelY">8</span>%
+            </div>
+
+            <!-- 시계 내용물 렌더링 컨테이너 -->
+            <div id="clockDisplay" class="style-retro-bold flex flex-col">
+              <!-- 시계 내부 엘리먼트가 JS에 의해 주입됨 -->
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 뷰포트 하단 크로마키 프리셋 버튼 -->
+      <div id="viewportFooter" class="bg-slate-900/60 border border-slate-800 p-3 rounded-xl flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-2">
+          <span class="text-slate-400 font-medium">크로마키 배경:</span>
+          <button data-bg="#00FF00" class="bg-btn px-2.5 py-1 rounded-md bg-[#00FF00] text-black font-bold border border-green-400">Green</button>
+          <button data-bg="#0000FF" class="bg-btn px-2.5 py-1 rounded-md bg-[#0000FF] text-white font-bold border border-blue-400">Blue</button>
+          <button data-bg="#FF00FF" class="bg-btn px-2.5 py-1 rounded-md bg-[#FF00FF] text-white font-bold border border-fuchsia-400">Magenta</button>
+          <button data-bg="#000000" class="bg-btn px-2.5 py-1 rounded-md bg-black text-white font-bold border border-slate-700">Black</button>
+          <button data-bg="test" class="bg-btn px-2.5 py-1 rounded-md bg-slate-800 text-slate-200 border border-slate-600">방송 영상 모의</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <label class="flex items-center gap-1.5 cursor-pointer text-slate-300">
+            <input type="checkbox" id="crtCheck" class="rounded bg-slate-800 border-slate-700 text-emerald-500 focus:ring-0">
+            <span>CRT 스캔라인</span>
+          </label>
+        </div>
+      </div>
+    </section>
+
+    <!-- 우측 제어 패널 (수동 폰트 업로드 제거 & 즉시 적용) -->
+    <section class="lg:col-span-5 flex flex-col gap-5 bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-xl">
+      
+      <!-- 1. 3가지 버전 선택 탭 -->
+      <div>
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+          1. 시계 자막 버전 선택 (사진 속 3가지 스타일)
+        </label>
+        <div class="grid grid-cols-3 gap-2">
+          <button id="styleBtn1" class="style-choice-btn active p-2.5 rounded-lg border-2 border-emerald-500 bg-emerald-500/10 text-left transition flex flex-col gap-1">
+            <span class="text-xs font-bold text-white flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> 1. 레트로
+            </span>
+            <span class="text-[10px] text-slate-400">4:26 볼드 아웃라인</span>
+          </button>
+          <button id="styleBtn2" class="style-choice-btn p-2.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-800 text-left transition flex flex-col gap-1">
+            <span class="text-xs font-bold text-white flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span> 2. OSD
+            </span>
+            <span class="text-[10px] text-slate-400">7:07 슬림 세그먼트</span>
+          </button>
+          <button id="styleBtn3" class="style-choice-btn p-2.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-800 text-left transition flex flex-col gap-1">
+            <span class="text-xs font-bold text-white flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full bg-slate-400"></span> 3. 지코쿠
+            </span>
+            <span class="text-[10px] text-slate-400">17(日) 6:59.56 모닝</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 2. 시간 및 초 제어 (요청사항: 초는 50초대에 선택 가능) -->
+      <div class="border-t border-slate-800 pt-4">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            2. 시간 & 초 흐름 모드 설정
+          </label>
+          <span class="text-[11px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 font-mono" id="secModeBadge">
+            커스텀 시간 순환 모드
+          </span>
+        </div>
+
+        <!-- 초 제어 모드 버튼군 -->
+        <div class="grid grid-cols-3 gap-2 mb-3">
+          <button id="secModeCustomLoop" class="sec-mode-btn active py-1.5 px-2 rounded-lg text-xs font-medium border-2 border-emerald-500 bg-emerald-500/20 text-white font-bold">
+            커스텀 시간 순환
+          </button>
+          <button id="secModeReal" class="sec-mode-btn py-1.5 px-2 rounded-lg text-xs font-medium border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300">
+            실제 현재시각
+          </button>
+          <button id="secModePause" class="sec-mode-btn py-1.5 px-2 rounded-lg text-xs font-medium border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300">
+            일시정지 (시간 고정)
+          </button>
+        </div>
+
+        <!-- 50초대 특정 초 바로가기 셀렉터 -->
+        <div id="fiftiesSecContainer" class="bg-slate-950/60 p-2.5 rounded-lg border border-slate-800">
+          <span class="text-[11px] text-slate-400 block mb-1.5">⚡ 50초대 초 즉시 선택 (클릭 시 해당 초부터 계속 순환):</span>
+          <div class="grid grid-cols-5 gap-1 font-mono text-xs">
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition" data-sec="50">50초</button>
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition" data-sec="51">51초</button>
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition" data-sec="52">52초</button>
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition" data-sec="53">53초</button>
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition" data-sec="54">54초</button>
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition" data-sec="55">55초</button>
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition active bg-emerald-600 font-bold" data-sec="56">56초 (사진3)</button>
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition" data-sec="57">57초</button>
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition" data-sec="58">58초</button>
+            <button class="sec-pick-btn py-1 rounded bg-slate-800 hover:bg-emerald-600 text-slate-200 transition" data-sec="59">59초</button>
+          </div>
+        </div>
+
+        <!-- 수동 시간 조절 슬라이더 및 입력창 -->
+        <div class="grid grid-cols-3 gap-2 mt-3 text-xs">
+          <div>
+            <label class="text-[11px] text-slate-400">시 (Hour)</label>
+            <input type="number" id="inputHour" min="0" max="23" value="6" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-center font-mono focus:border-emerald-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-400">분 (Min)</label>
+            <input type="number" id="inputMin" min="0" max="59" value="59" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-center font-mono focus:border-emerald-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-400">초 (Sec)</label>
+            <input type="number" id="inputSec" min="0" max="59" value="56" class="w-full bg-slate-800 border border-slate-700 rounded px-2 py-1 text-center font-mono focus:border-emerald-500 focus:outline-none">
+          </div>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800 pt-4">
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+          3. 날짜 & 요일 커스텀 (버전 3 지원)
+        </label>
+        <div class="grid grid-cols-2 gap-2 text-xs">
+          <div>
+            <label class="text-[11px] text-slate-400">상단 날짜 (예: 17 또는 10.6)</label>
+            <input type="text" id="inputCustomDate" value="17" class="w-full bg-slate-800 border border-slate-700 rounded px-2.5 py-1 font-mono focus:border-emerald-500 focus:outline-none">
+          </div>
+          <div>
+            <label class="text-[11px] text-slate-400">요일 표기 (예: (日), (화), MON)</label>
+            <input type="text" id="inputCustomDay" value="(日)" class="w-full bg-slate-800 border border-slate-700 rounded px-2.5 py-1 font-mono focus:border-emerald-500 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="mt-2 flex flex-wrap gap-3 text-xs text-slate-300">
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="showSecondsCheck" checked class="rounded bg-slate-800 border-slate-700 text-emerald-500">
+            <span>초 단위 표시 (.56)</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="blinkColonCheck" class="rounded bg-slate-800 border-slate-700 text-emerald-500">
+            <span>콜론 깜빡임 ( : )</span>
+          </label>
+          <label class="flex items-center gap-1.5 cursor-pointer">
+            <input type="checkbox" id="leadingZeroHourCheck" class="rounded bg-slate-800 border-slate-700 text-emerald-500">
+            <span>시 2자리 (04:26)</span>
+          </label>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800 pt-4">
+        <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">
+          4. 16:9 딱 맞춤 위치 & 폰트 크기
+        </label>
+        
+        <!-- 위치 프리셋 -->
+        <div class="grid grid-cols-4 gap-1.5 mb-3 text-xs font-mono">
+          <button id="posTopLeft" class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">좌상단 (표준)</button>
+          <button id="posTopRight" class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">우상단</button>
+          <button id="posBottomLeft" class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">좌하단</button>
+          <button id="posCenter" class="py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300">중앙</button>
+        </div>
+
+        <div class="space-y-2 text-xs">
+          <div class="flex items-center justify-between">
+            <span class="text-slate-400">시계 배율 (Scale)</span>
+            <span id="scaleVal" class="font-mono text-emerald-400">100%</span>
+          </div>
+          <input type="range" id="scaleSlider" min="50" max="250" value="100" class="w-full accent-emerald-500">
+
+          <div class="grid grid-cols-2 gap-2">
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400">
+                <span>X 좌표 (좌우)</span>
+                <span id="posXVal" class="font-mono">8%</span>
+              </div>
+              <input type="range" id="posXSlider" min="0" max="90" value="8" class="w-full accent-emerald-500">
+            </div>
+            <div>
+              <div class="flex justify-between text-[11px] text-slate-400">
+                <span>Y 좌표 (상하)</span>
+                <span id="posYVal" class="font-mono">8%</span>
+              </div>
+              <input type="range" id="posYSlider" min="0" max="90" value="8" class="w-full accent-emerald-500">
+            </div>
+          </div>
+        </div>
+
+        <!-- 폰트 적용 상태 알림 바 (기존 파일 업로드 제거) -->
+        <div class="mt-4 p-2.5 rounded-lg bg-emerald-950/30 border border-emerald-500/30 text-xs flex items-center justify-between">
+          <div class="flex items-center gap-2 text-emerald-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+            </svg>
+            <span class="font-semibold text-[11px]">지정 리포지토리 웹폰트 즉시 연동됨</span>
+          </div>
+          <span class="text-[10px] text-slate-400 font-mono">Hosain1291/clocktitle (LargeFill / ClarityFill)</span>
+        </div>
+      </div>
+
+      <div class="border-t border-slate-800 pt-3 flex gap-2">
+        <button id="snapPngBtn" class="flex-1 py-2 px-3 rounded-lg text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center justify-center gap-1.5">
+          <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+          </svg>
+          <span id="snapBtnLabel">16:9 크로마키 PNG 저장</span>
+        </button>
+      </div>
+
+    </section>
+  </main>
+
+  <div id="toast" class="fixed bottom-6 right-6 bg-slate-900 border border-emerald-500/50 text-white px-4 py-2.5 rounded-xl shadow-2xl text-xs flex items-center gap-2 transform translate-y-20 opacity-0 transition-all z-50 pointer-events-none">
+    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+    <span id="toastMsg">녹화가 시작되었습니다.</span>
+  </div>
+
+  <script>
+    // 상태 관리 변수 정의
+    const state = {
+      version: 1, // 1: 레트로 볼드(4:26), 2: OSD 세그먼트(7:07), 3: 모닝 뉴스 지코쿠(17(日) 6:59.56)
+      aspectRatio: '16:9', // '16:9', '4:3', '5:4'
+      canvasWidth: 1920,
+      canvasHeight: 1080,
+      secMode: 'customLoop', // 'customLoop' (설정 시간부터 계속 진행), 'real', 'pause'
+      hour: 6,
+      min: 59,
+      sec: 56,
+      dateText: "17",
+      dayText: "(日)",
+      scale: 100,
+      posX: 8,
+      posY: 8,
+      showSeconds: true,
+      blinkColon: false,
+      leadingZeroHour: false,
+      bgColor: '#00FF00',
+      isRecording: false,
+      mediaRecorder: null,
+      recordedChunks: []
+    };
+
+    // DOM 캐싱
+    const clockDisplay = document.getElementById('clockDisplay');
+    const clockWidget = document.getElementById('clockWidget');
+    const canvasWrapper = document.getElementById('canvasWrapper');
+    const exportCanvas = document.getElementById('exportCanvas');
+    const safeAreaGuides = document.getElementById('safeAreaGuides');
+    const crtOverlay = document.getElementById('crtOverlay');
+    const toast = document.getElementById('toast');
+    const toastMsg = document.getElementById('toastMsg');
+    const recordBtn = document.getElementById('recordBtn');
+    const recordText = document.getElementById('recordText');
+    const recordDot = document.getElementById('recordDot');
+    const aspectBadge = document.getElementById('aspectBadge');
+    const canvasResLabel = document.getElementById('canvasResLabel');
+    const snapBtnLabel = document.getElementById('snapBtnLabel');
+    const cleanModeBtn = document.getElementById('cleanModeBtn');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const exitCleanBtn = document.getElementById('exitCleanBtn');
+
+    // 시계만 보기(Clean Mode) 토글
+    function toggleCleanMode(force) {
+      const isClean = document.body.classList.toggle('clean-mode', force);
+      if (isClean) {
+        showToast('시계 단독 모드가 켜졌습니다. (ESC 또는 우상단 버튼으로 복귀)');
+      } else {
+        showToast('일반 모드로 복귀했습니다.');
+      }
+    }
+
+    cleanModeBtn.addEventListener('click', () => toggleCleanMode(true));
+    exitCleanBtn.addEventListener('click', () => toggleCleanMode(false));
+
+    // 전체화면 (Fullscreen) 토글
+    fullscreenBtn.addEventListener('click', () => {
+      const target = document.body.classList.contains('clean-mode') ? canvasWrapper : canvasWrapper;
+      if (!document.fullscreenElement) {
+        if (target.requestFullscreen) {
+          target.requestFullscreen();
+        } else if (target.webkitRequestFullscreen) {
+          target.webkitRequestFullscreen();
+        }
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // ESC 키로 시계 단독 모드 종료
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && document.body.classList.contains('clean-mode')) {
+        toggleCleanMode(false);
+      }
+    });
+
+    const btnAspect169 = document.getElementById('btnAspect169');
+    const btnAspect43 = document.getElementById('btnAspect43');
+    const btnAspect54 = document.getElementById('btnAspect54');
+    const aspectButtons = [
+      { el: btnAspect169, ratio: '16:9', w: 1920, h: 1080, aspectClass: 'aspect-video', styleRatio: '16/9' },
+      { el: btnAspect43,  ratio: '4:3',  w: 1440, h: 1080, aspectClass: 'aspect-[4/3]',   styleRatio: '4/3' },
+      { el: btnAspect54,  ratio: '5:4',  w: 1350, h: 1080, aspectClass: 'aspect-[5/4]',   styleRatio: '5/4' }
+    ];
+
+    function setAspectRatio(ratioKey) {
+      const target = aspectButtons.find(b => b.ratio === ratioKey);
+      if (!target) return;
+
+      state.aspectRatio = target.ratio;
+      state.canvasWidth = target.w;
+      state.canvasHeight = target.h;
+
+      // 캔버스 크기 업데이트
+      exportCanvas.width = target.w;
+      exportCanvas.height = target.h;
+
+      // 뷰포트 컨테이너 종횡비 업데이트
+      canvasWrapper.style.aspectRatio = target.styleRatio;
+
+      // UI 라벨 및 활성 버튼 스타일 업데이트
+      aspectButtons.forEach(b => {
+        if (b.ratio === ratioKey) {
+          b.el.className = 'aspect-btn active px-2.5 py-1 text-xs font-semibold rounded bg-emerald-500 text-white transition';
+        } else {
+          b.el.className = 'aspect-btn px-2.5 py-1 text-xs font-medium text-slate-300 hover:text-white transition';
+        }
+      });
+
+      aspectBadge.textContent = `${target.ratio} 크로마키`;
+      canvasResLabel.textContent = `${target.ratio} BROADCAST CANVAS (${target.w} × ${target.h})`;
+      snapBtnLabel.textContent = `${target.ratio} 크로마키 PNG 저장`;
+      showToast(`화면 비율이 ${target.ratio} (${target.w}×${target.h}) 규격으로 변경되었습니다.`);
+      renderClock();
+    }
+
+    btnAspect169.addEventListener('click', () => setAspectRatio('16:9'));
+    btnAspect43.addEventListener('click', () => setAspectRatio('4:3'));
+    btnAspect54.addEventListener('click', () => setAspectRatio('5:4'));
+
+    function showToast(message) {
+      toastMsg.textContent = message;
+      toast.classList.remove('translate-y-20', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-20', 'opacity-0');
+      }, 3000);
+    }
+
+    function renderClock() {
+      // 1. 시간 값 계산
+      let h = state.hour;
+      let m = state.min;
+      let s = state.sec;
+
+      if (state.secMode === 'real') {
+        const now = new Date();
+        h = now.getHours();
+        m = now.getMinutes();
+        s = now.getSeconds();
+      }
+
+      const hStr = state.leadingZeroHour ? String(h).padStart(2, '0') : String(h);
+      const mStr = String(m).padStart(2, '0');
+      const sStr = String(s).padStart(2, '0');
+
+      // 콜론 깜빡임 계산
+      const colonVisible = !state.blinkColon || (s % 2 === 0);
+      const colonChar = colonVisible ? ':' : ' ';
+
+      // 스타일 클래스 적용
+      clockDisplay.className = 'flex flex-col';
+      
+      if (state.version === 1) {
+        // 스타일 1: 레트로 볼드 아웃라인 (사진 1: 4:26)
+        clockDisplay.classList.add('style-retro-bold');
+        clockDisplay.innerHTML = `
+          <div class="text-6xl md:text-7xl tracking-wider select-none flex items-baseline">
+            <span>${hStr}</span>
+            <span class="mx-0.5" style="opacity: ${colonVisible ? 1 : 0};">:</span>
+            <span>${mStr}</span>
+            ${state.showSeconds ? `<span class="text-3xl md:text-4xl ml-1 font-mono" style="opacity: 0.85;">.${sStr}</span>` : ''}
+          </div>
+        `;
+      } else if (state.version === 2) {
+        // 스타일 2: 각진 모던 디지털 OSD (사진 2: 7:07)
+        clockDisplay.classList.add('style-digital-osd');
+        clockDisplay.innerHTML = `
+          <div class="text-6xl md:text-7xl select-none flex items-baseline">
+            <span>${hStr}</span>
+            <span class="mx-1" style="opacity: ${colonVisible ? 1 : 0};">:</span>
+            <span>${mStr}</span>
+            ${state.showSeconds ? `<span class="text-2xl md:text-3xl ml-1 font-mono text-cyan-300/80">.${sStr}</span>` : ''}
+          </div>
+        `;
+      } else if (state.version === 3) {
+        // 스타일 3: 일본 아침 뉴스 지코쿠 효지 (사진 3: 17(日) 6:59.56)
+        clockDisplay.classList.add('style-morning-news');
+        clockDisplay.innerHTML = `
+          <div class="sub-date text-xl md:text-2xl font-bold flex items-center gap-1 mb-[-4px] select-none text-slate-100">
+            <span>${state.dateText}</span>
+            <span class="text-sm md:text-base font-medium opacity-90">${state.dayText}</span>
+          </div>
+          <div class="text-5xl md:text-6xl tracking-tight select-none flex items-baseline font-black">
+            <span>${hStr}</span>
+            <span class="mx-0.5" style="opacity: ${colonVisible ? 1 : 0};">:</span>
+            <span>${mStr}</span>
+            ${state.showSeconds ? `<span class="text-3xl md:text-4xl ml-1 font-bold">.${sStr}</span>` : ''}
+          </div>
+        `;
+      }
+
+      // 배율 및 위치 적용
+      clockWidget.style.transform = `scale(${state.scale / 100})`;
+      clockWidget.style.transformOrigin = 'top left';
+      clockWidget.style.left = `${state.posX}%`;
+      clockWidget.style.top = `${state.posY}%`;
+      document.getElementById('labelX').textContent = Math.round(state.posX);
+      document.getElementById('labelY').textContent = Math.round(state.posY);
+    }
+
+    // 1초 단위 타이머: 커스텀 시간 기준 자동 순환 카운트업
+    setInterval(() => {
+      if (state.secMode === 'customLoop') {
+        state.sec++;
+        if (state.sec >= 60) {
+          state.sec = 0;
+          state.min++;
+          if (state.min >= 60) {
+            state.min = 0;
+            state.hour = (state.hour + 1) % 24;
+          }
+        }
+        document.getElementById('inputHour').value = state.hour;
+        document.getElementById('inputMin').value = state.min;
+        document.getElementById('inputSec').value = state.sec;
+      } else if (state.secMode === 'real') {
+        const now = new Date();
+        state.hour = now.getHours();
+        state.min = now.getMinutes();
+        state.sec = now.getSeconds();
+        document.getElementById('inputHour').value = state.hour;
+        document.getElementById('inputMin').value = state.min;
+        document.getElementById('inputSec').value = state.sec;
+      }
+      renderClock();
+    }, 1000);
+
+    const styleBtns = [
+      { id: 'styleBtn1', ver: 1 },
+      { id: 'styleBtn2', ver: 2 },
+      { id: 'styleBtn3', ver: 3 }
+    ];
+
+    styleBtns.forEach(btnInfo => {
+      document.getElementById(btnInfo.id).addEventListener('click', () => {
+        state.version = btnInfo.ver;
+        styleBtns.forEach(b => {
+          const el = document.getElementById(b.id);
+          if (b.ver === state.version) {
+            el.className = 'style-choice-btn active p-2.5 rounded-lg border-2 border-emerald-500 bg-emerald-500/10 text-left transition flex flex-col gap-1';
+            el.querySelector('span span').className = 'w-2 h-2 rounded-full bg-emerald-400';
+          } else {
+            el.className = 'style-choice-btn p-2.5 rounded-lg border border-slate-700 bg-slate-800/60 hover:bg-slate-800 text-left transition flex flex-col gap-1';
+            el.querySelector('span span').className = 'w-2 h-2 rounded-full bg-slate-400';
+          }
+        });
+
+        // 버전별 추천 기본값 세팅
+        if (state.version === 1) {
+          state.hour = 4; state.min = 26; state.showSeconds = false;
+        } else if (state.version === 2) {
+          state.hour = 7; state.min = 7; state.showSeconds = false;
+        } else if (state.version === 3) {
+          state.hour = 6; state.min = 59; state.sec = 56; state.showSeconds = true;
+        }
+        document.getElementById('inputHour').value = state.hour;
+        document.getElementById('inputMin').value = state.min;
+        document.getElementById('inputSec').value = state.sec;
+        document.getElementById('showSecondsCheck').checked = state.showSeconds;
+
+        renderClock();
+        showToast(`스타일 ${state.version}번이 적용되었습니다.`);
+      });
+    });
+
+    const secModeCustomLoop = document.getElementById('secModeCustomLoop');
+    const secModeReal = document.getElementById('secModeReal');
+    const secModePause = document.getElementById('secModePause');
+    const secModeBadge = document.getElementById('secModeBadge');
+
+    function updateSecModeUI(mode) {
+      state.secMode = mode;
+      [secModeCustomLoop, secModeReal, secModePause].forEach(el => {
+        el.className = 'sec-mode-btn py-1.5 px-2 rounded-lg text-xs font-medium border border-slate-700 bg-slate-800 hover:bg-slate-700 text-slate-300';
+      });
+
+      if (mode === 'customLoop') {
+        secModeCustomLoop.className = 'sec-mode-btn active py-1.5 px-2 rounded-lg text-xs font-medium border-2 border-emerald-500 bg-emerald-500/20 text-white font-bold';
+        secModeBadge.textContent = '커스텀 시간 순환 모드';
+      } else if (mode === 'real') {
+        secModeReal.className = 'sec-mode-btn active py-1.5 px-2 rounded-lg text-xs font-medium border-2 border-emerald-500 bg-emerald-500/20 text-white font-bold';
+        secModeBadge.textContent = '실시간 표준시';
+      } else {
+        secModePause.className = 'sec-mode-btn active py-1.5 px-2 rounded-lg text-xs font-medium border-2 border-emerald-500 bg-emerald-500/20 text-white font-bold';
+        secModeBadge.textContent = '시간 일시정지 (고정)';
+      }
+      renderClock();
+    }
+
+    secModeCustomLoop.addEventListener('click', () => updateSecModeUI('customLoop'));
+    secModeReal.addEventListener('click', () => updateSecModeUI('real'));
+    secModePause.addEventListener('click', () => updateSecModeUI('pause'));
+
+    // 50초대 즉시 선택 버튼들 (클릭 시 해당 초로 변경되고 그 시점부터 커스텀 순환 계속 진행)
+    document.querySelectorAll('.sec-pick-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.sec-pick-btn').forEach(b => b.classList.remove('bg-emerald-600', 'font-bold'));
+        btn.classList.add('bg-emerald-600', 'font-bold');
+        state.sec = parseInt(btn.getAttribute('data-sec'), 10);
+        document.getElementById('inputSec').value = state.sec;
+        updateSecModeUI('customLoop');
+        showToast(`${state.sec}초로 변경되었으며, 이어서 시간이 순환 진행됩니다.`);
+      });
+    });
+
+    document.getElementById('inputHour').addEventListener('input', (e) => {
+      state.hour = parseInt(e.target.value, 10) || 0;
+      updateSecModeUI('customLoop');
+    });
+    document.getElementById('inputMin').addEventListener('input', (e) => {
+      state.min = parseInt(e.target.value, 10) || 0;
+      updateSecModeUI('customLoop');
+    });
+    document.getElementById('inputSec').addEventListener('input', (e) => {
+      state.sec = parseInt(e.target.value, 10) || 0;
+      updateSecModeUI('customLoop');
+    });
+
+    // 날짜/요일 입력
+    document.getElementById('inputCustomDate').addEventListener('input', (e) => {
+      state.dateText = e.target.value;
+      renderClock();
+    });
+    document.getElementById('inputCustomDay').addEventListener('input', (e) => {
+      state.dayText = e.target.value;
+      renderClock();
+    });
+
+    // 체크박스 옵션
+    document.getElementById('showSecondsCheck').addEventListener('change', (e) => {
+      state.showSeconds = e.target.checked;
+      renderClock();
+    });
+    document.getElementById('blinkColonCheck').addEventListener('change', (e) => {
+      state.blinkColon = e.target.checked;
+      renderClock();
+    });
+    document.getElementById('leadingZeroHourCheck').addEventListener('change', (e) => {
+      state.leadingZeroHour = e.target.checked;
+      renderClock();
+    });
+
+    // 위치 및 배율 슬라이더
+    const scaleSlider = document.getElementById('scaleSlider');
+    const posXSlider = document.getElementById('posXSlider');
+    const posYSlider = document.getElementById('posYSlider');
+
+    scaleSlider.addEventListener('input', (e) => {
+      state.scale = parseInt(e.target.value, 10);
+      document.getElementById('scaleVal').textContent = `${state.scale}%`;
+      renderClock();
+    });
+    posXSlider.addEventListener('input', (e) => {
+      state.posX = parseFloat(e.target.value);
+      document.getElementById('posXVal').textContent = `${Math.round(state.posX)}%`;
+      renderClock();
+    });
+    posYSlider.addEventListener('input', (e) => {
+      state.posY = parseFloat(e.target.value);
+      document.getElementById('posYVal').textContent = `${Math.round(state.posY)}%`;
+      renderClock();
+    });
+
+    // 위치 프리셋 버튼들
+    document.getElementById('posTopLeft').addEventListener('click', () => {
+      state.posX = 8; state.posY = 8;
+      posXSlider.value = 8; posYSlider.value = 8;
+      renderClock();
+    });
+    document.getElementById('posTopRight').addEventListener('click', () => {
+      state.posX = 65; state.posY = 8;
+      posXSlider.value = 65; posYSlider.value = 8;
+      renderClock();
+    });
+    document.getElementById('posBottomLeft').addEventListener('click', () => {
+      state.posX = 8; state.posY = 75;
+      posXSlider.value = 8; posYSlider.value = 75;
+      renderClock();
+    });
+    document.getElementById('posCenter').addEventListener('click', () => {
+      state.posX = 35; state.posY = 40;
+      posXSlider.value = 35; posYSlider.value = 40;
+      renderClock();
+    });
+
+    let isDragging = false;
+    let dragStartX = 0;
+    let dragStartY = 0;
+
+    clockWidget.addEventListener('mousedown', (e) => {
+      isDragging = true;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      const rect = canvasWrapper.getBoundingClientRect();
+      const deltaX = (e.clientX - dragStartX) / rect.width * 100;
+      const deltaY = (e.clientY - dragStartY) / rect.height * 100;
+      
+      state.posX = Math.max(0, Math.min(85, state.posX + deltaX));
+      state.posY = Math.max(0, Math.min(85, state.posY + deltaY));
+      
+      posXSlider.value = state.posX;
+      posYSlider.value = state.posY;
+      dragStartX = e.clientX;
+      dragStartY = e.clientY;
+      renderClock();
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+    });
+
+    document.querySelectorAll('.bg-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const bg = btn.getAttribute('data-bg');
+        state.bgColor = bg;
+        if (bg === 'test') {
+          // 방송 모의 배경 이미지 적용
+          canvasWrapper.style.backgroundColor = 'transparent';
+          canvasWrapper.style.backgroundImage = 'radial-gradient(circle at 50% 50%, #1e3a8a 0%, #0f172a 100%)';
+        } else {
+          canvasWrapper.style.backgroundImage = 'none';
+          canvasWrapper.style.backgroundColor = bg;
+        }
+        showToast(`크로마키 배경 색상이 변경되었습니다.`);
+      });
+    });
+
+    document.getElementById('toggleGuideBtn').addEventListener('click', () => {
+      safeAreaGuides.classList.toggle('hidden');
+    });
+
+    document.getElementById('crtCheck').addEventListener('change', (e) => {
+      crtOverlay.style.opacity = e.target.checked ? '1' : '0';
+    });
+
+    // 캔버스에 시계 드로잉 함수
+    function drawClockToCanvas(ctx, width, height) {
+      // 1. 크로마키 배경 그리기
+      if (state.bgColor === 'test') {
+        const grad = ctx.createRadialGradient(width/2, height/2, 10, width/2, height/2, width/2);
+        grad.addColorStop(0, '#1e3a8a');
+        grad.addColorStop(1, '#0f172a');
+        ctx.fillStyle = grad;
+      } else {
+        ctx.fillStyle = state.bgColor;
+      }
+      ctx.fillRect(0, 0, width, height);
+
+      // 2. 시간 문자열 산출
+      let h = state.hour;
+      let m = state.min;
+      let s = state.sec;
+      if (state.secMode === 'real') {
+        const now = new Date();
+        h = now.getHours();
+        m = now.getMinutes();
+        s = now.getSeconds();
+      }
+
+      const hStr = state.leadingZeroHour ? String(h).padStart(2, '0') : String(h);
+      const mStr = String(m).padStart(2, '0');
+      const sStr = String(s).padStart(2, '0');
+      const colonVisible = !state.blinkColon || (s % 2 === 0);
+      const colon = colonVisible ? ':' : ' ';
+
+      // 3. 좌표 및 배율 계산
+      const x = (state.posX / 100) * width;
+      const y = (state.posY / 100) * height;
+      const baseScale = (state.scale / 100);
+
+      ctx.save();
+      ctx.translate(x, y);
+
+      if (state.version === 1) {
+        // 스타일 1 캔버스 렌더링 (사진 1: 4:26 볼드 아웃라인)
+        ctx.font = `900 ${Math.round(112 * baseScale)}px "BetaflightLarge", "Orbitron", sans-serif`;
+        ctx.lineWidth = 14 * baseScale;
+        ctx.strokeStyle = '#000000';
+        ctx.fillStyle = '#ffffff';
+        ctx.textBaseline = 'top';
+
+        const mainText = `${hStr}${colon}${mStr}`;
+        ctx.strokeText(mainText, 0, 0);
+        ctx.fillText(mainText, 0, 0);
+
+        if (state.showSeconds) {
+          const mainWidth = ctx.measureText(mainText).width;
+          ctx.font = `900 ${Math.round(65 * baseScale)}px "BetaflightLarge", "Orbitron", sans-serif`;
+          ctx.lineWidth = 10 * baseScale;
+          ctx.strokeText(`.${sStr}`, mainWidth + (10 * baseScale), 35 * baseScale);
+          ctx.fillText(`.${sStr}`, mainWidth + (10 * baseScale), 35 * baseScale);
+        }
+
+      } else if (state.version === 2) {
+        // 스타일 2 캔버스 렌더링 (사진 2: 7:07 OSD 디지털 세그먼트)
+        ctx.font = `700 ${Math.round(105 * baseScale)}px "BetaflightDigital", "Chakra Petch", monospace`;
+        ctx.lineWidth = 8 * baseScale;
+        ctx.strokeStyle = '#081726';
+        ctx.fillStyle = '#ebffff';
+        ctx.textBaseline = 'top';
+
+        const mainText = `${hStr}${colon}${mStr}`;
+        ctx.strokeText(mainText, 0, 0);
+        ctx.fillText(mainText, 0, 0);
+
+        if (state.showSeconds) {
+          const mainWidth = ctx.measureText(mainText).width;
+          ctx.font = `700 ${Math.round(55 * baseScale)}px "BetaflightDigital", "Chakra Petch", monospace`;
+          ctx.lineWidth = 6 * baseScale;
+          ctx.fillStyle = '#67e8f9';
+          ctx.strokeText(`.${sStr}`, mainWidth + (10 * baseScale), 40 * baseScale);
+          ctx.fillText(`.${sStr}`, mainWidth + (10 * baseScale), 40 * baseScale);
+        }
+
+      } else if (state.version === 3) {
+        // 스타일 3 캔버스 렌더링 (사진 3: 17(日) 6:59.56 모닝 뉴스 지코쿠)
+        // 상단 날짜 및 요일은 서초돋움(SeochoDotum)으로 렌더링
+        ctx.font = `700 ${Math.round(42 * baseScale)}px "SeochoDotum", "Noto Sans KR", sans-serif`;
+        ctx.lineWidth = 8 * baseScale;
+        ctx.strokeStyle = '#000000';
+        ctx.fillStyle = '#ffffff';
+        ctx.textBaseline = 'top';
+
+        const dateString = `${state.dateText} ${state.dayText}`;
+        ctx.strokeText(dateString, 0, 0);
+        ctx.fillText(dateString, 0, 0);
+
+        // 하단 시:분.초는 BetaflightLarge 서체로 렌더링
+        ctx.font = `900 ${Math.round(102 * baseScale)}px "BetaflightLarge", "Noto Sans KR", sans-serif`;
+        ctx.lineWidth = 14 * baseScale;
+        const timeY = 48 * baseScale;
+
+        const mainText = `${hStr}${colon}${mStr}`;
+        ctx.strokeText(mainText, 0, timeY);
+        ctx.fillText(mainText, 0, timeY);
+
+        if (state.showSeconds) {
+          const mainWidth = ctx.measureText(mainText).width;
+          ctx.font = `900 ${Math.round(72 * baseScale)}px "BetaflightLarge", "Noto Sans KR", sans-serif`;
+          ctx.lineWidth = 10 * baseScale;
+          ctx.strokeText(`.${sStr}`, mainWidth + (6 * baseScale), timeY + (20 * baseScale));
+          ctx.fillText(`.${sStr}`, mainWidth + (6 * baseScale), timeY + (20 * baseScale));
+        }
+      }
+
+      ctx.restore();
+    }
+
+    document.getElementById('snapPngBtn').addEventListener('click', () => {
+      const ctx = exportCanvas.getContext('2d');
+      drawClockToCanvas(ctx, exportCanvas.width, exportCanvas.height);
+
+      const link = document.createElement('a');
+      link.download = `broadcast_clock_${state.aspectRatio.replace(':', 'x')}_${state.hour}_${state.min}_${state.sec}_chromakey.png`;
+      link.href = exportCanvas.toDataURL('image/png');
+      link.click();
+      showToast(`${state.aspectRatio} (${exportCanvas.width}×${exportCanvas.height}) 크로마키 이미지가 저장되었습니다!`);
+    });
+
+    recordBtn.addEventListener('click', () => {
+      // 이미 녹화 중일 때 다시 누르면 즉시 녹화 완료 및 다운로드
+      if (state.isRecording) {
+        if (state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
+          state.mediaRecorder.stop();
+        }
+        return;
+      }
+
+      const ctx = exportCanvas.getContext('2d');
+      const stream = exportCanvas.captureStream(30); // 30 FPS 표준 방송 프레임
+      state.recordedChunks = [];
+
+      // MP4 코덱 우선 매핑 (H.264/AVC1 고화질 8Mbps)
+      const mp4Formats = [
+        'video/mp4;codecs=avc1.42E01E,mp4a.40.2',
+        'video/mp4;codecs=avc1',
+        'video/mp4;codecs=h264',
+        'video/mp4'
+      ];
+      let selectedMimeType = mp4Formats.find(format => MediaRecorder.isTypeSupported(format)) || '';
+
+      try {
+        state.mediaRecorder = selectedMimeType 
+          ? new MediaRecorder(stream, { mimeType: selectedMimeType, videoBitsPerSecond: 8000000 })
+          : new MediaRecorder(stream, { videoBitsPerSecond: 8000000 });
+      } catch (e) {
+        state.mediaRecorder = new MediaRecorder(stream);
+      }
+
+      const isMp4 = !selectedMimeType || selectedMimeType.includes('mp4');
+      const extension = isMp4 ? 'mp4' : 'webm';
+      const outputMime = selectedMimeType || (isMp4 ? 'video/mp4' : 'video/webm');
+
+      state.isRecording = true;
+      recordBtn.classList.remove('bg-red-600', 'hover:bg-red-500');
+      recordBtn.classList.add('bg-amber-600', 'hover:bg-amber-500');
+      recordText.textContent = 'MP4 녹화 중 (클릭 시 조기 종료)...';
+      document.getElementById('currentStatusLabel').textContent = `상태: ${state.aspectRatio} 크로마키 MP4 인코딩 중...`;
+      showToast(`${state.aspectRatio} 크로마키 MP4 녹화가 시작되었습니다.`);
+
+      // 실시간 고해상도 캔버스 프레임 렌더 루프
+      let frameId;
+      function recordLoop() {
+        if (!state.isRecording) return;
+        drawClockToCanvas(ctx, exportCanvas.width, exportCanvas.height);
+        frameId = requestAnimationFrame(recordLoop);
+      }
+      recordLoop();
+
+      state.mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          state.recordedChunks.push(event.data);
+        }
+      };
+
+      state.mediaRecorder.onstop = () => {
+        cancelAnimationFrame(frameId);
+        const blob = new Blob(state.recordedChunks, { type: outputMime });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const ratioStr = state.aspectRatio.replace(':', 'x');
+        a.download = `broadcast_clock_chromakey_${ratioStr}_style${state.version}.${extension}`;
+        a.click();
+        URL.revokeObjectURL(url);
+
+        state.isRecording = false;
+        recordBtn.classList.remove('bg-amber-600', 'hover:bg-amber-500');
+        recordBtn.classList.add('bg-red-600', 'hover:bg-red-500');
+        recordText.textContent = '크로마키 MP4 녹화 (10초)';
+        document.getElementById('currentStatusLabel').textContent = '상태: 실시간 대기중';
+        showToast(`녹화 완료! ${state.aspectRatio} 규격 ${extension.toUpperCase()} 비디오가 저장되었습니다.`);
+      };
+
+      state.mediaRecorder.start();
+
+      // 10초 후 자동 녹화 종료
+      setTimeout(() => {
+        if (state.isRecording && state.mediaRecorder && state.mediaRecorder.state !== 'inactive') {
+          state.mediaRecorder.stop();
+        }
+      }, 10000);
+    });
+
+    window.onload = function() {
+      renderClock();
+    };
+  </script>
+</body>
+</html>
