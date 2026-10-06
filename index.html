@@ -396,11 +396,22 @@
           </div>
         </div>
 
-        <div class="mt-2 flex flex-wrap gap-3 text-xs text-slate-300">
+        <div class="mt-2 flex flex-wrap items-center gap-3 text-xs text-slate-300">
           <label class="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" id="showSecondsCheck" checked class="rounded bg-slate-800 border-slate-700 text-emerald-500">
-            <span>초 단위 표시 (.56)</span>
+            <span>초 단위 표시</span>
           </label>
+          <div class="flex items-center bg-slate-800/80 rounded px-2 py-0.5 border border-slate-700 gap-2 text-[11px]">
+            <span class="text-slate-400">구분 기호:</span>
+            <label class="cursor-pointer flex items-center gap-1">
+              <input type="radio" name="secSepRadio" value="dot" checked class="accent-emerald-500">
+              <span>점 (.56)</span>
+            </label>
+            <label class="cursor-pointer flex items-center gap-1">
+              <input type="radio" name="secSepRadio" value="colon" class="accent-emerald-500">
+              <span>쌍점 (:56)</span>
+            </label>
+          </div>
           <label class="flex items-center gap-1.5 cursor-pointer">
             <input type="checkbox" id="blinkColonCheck" class="rounded bg-slate-800 border-slate-700 text-emerald-500">
             <span>콜론 깜빡임 ( : )</span>
@@ -490,6 +501,7 @@
       hour: 6,
       min: 59,
       sec: 56,
+      secSep: 'dot', // 'dot' (.56), 'colon' (:56)
       dateText: "17",
       dayText: "(日)",
       scale: 100,
@@ -632,31 +644,31 @@
 
       // 콜론 깜빡임 계산
       const colonVisible = !state.blinkColon || (s % 2 === 0);
-      const colonChar = colonVisible ? ':' : ' ';
+      const secPrefix = state.secSep === 'colon' ? ':' : '.';
 
       // 스타일 클래스 적용
       clockDisplay.className = 'flex flex-col';
       
       if (state.version === 1) {
-        // 스타일 1: 레트로 볼드 아웃라인 (사진 1: 4:26)
+        // 스타일 1: 레트로 볼드 아웃라인 (사진 1: 4:26) + 초 단위 전용 서체 자동 상속
         clockDisplay.classList.add('style-retro-bold');
         clockDisplay.innerHTML = `
           <div class="text-6xl md:text-7xl tracking-wider select-none flex items-baseline">
             <span>${hStr}</span>
             <span class="mx-0.5" style="opacity: ${colonVisible ? 1 : 0};">:</span>
             <span>${mStr}</span>
-            ${state.showSeconds ? `<span class="text-3xl md:text-4xl ml-1 font-mono" style="opacity: 0.85;">.${sStr}</span>` : ''}
+            ${state.showSeconds ? `<span class="text-3xl md:text-4xl ml-1.5 opacity-90">${secPrefix}${sStr}</span>` : ''}
           </div>
         `;
       } else if (state.version === 2) {
-        // 스타일 2: 각진 모던 디지털 OSD (사진 2: 7:07)
+        // 스타일 2: 각진 모던 디지털 OSD (사진 2: 7:07) + 초 단위 OSD 디지털 서체 적용
         clockDisplay.classList.add('style-digital-osd');
         clockDisplay.innerHTML = `
           <div class="text-6xl md:text-7xl select-none flex items-baseline">
             <span>${hStr}</span>
             <span class="mx-1" style="opacity: ${colonVisible ? 1 : 0};">:</span>
             <span>${mStr}</span>
-            ${state.showSeconds ? `<span class="text-2xl md:text-3xl ml-1 font-mono text-cyan-300/80">.${sStr}</span>` : ''}
+            ${state.showSeconds ? `<span class="text-3xl md:text-4xl ml-1.5 text-cyan-300 opacity-90">${secPrefix}${sStr}</span>` : ''}
           </div>
         `;
       } else if (state.version === 3) {
@@ -671,7 +683,7 @@
             <span>${hStr}</span>
             <span class="mx-0.5" style="opacity: ${colonVisible ? 1 : 0};">:</span>
             <span>${mStr}</span>
-            ${state.showSeconds ? `<span class="text-3xl md:text-4xl ml-1 font-bold">.${sStr}</span>` : ''}
+            ${state.showSeconds ? `<span class="text-3xl md:text-4xl ml-1.5 opacity-90 font-black">${secPrefix}${sStr}</span>` : ''}
           </div>
         `;
       }
@@ -731,15 +743,15 @@
             el.querySelector('span span').className = 'w-2 h-2 rounded-full bg-slate-400';
           }
         });
-
-        // 버전별 추천 기본값 세팅
+        // 버전별 추천 기본값 세팅 (초단위 기본 표시 ON 유지)
         if (state.version === 1) {
-          state.hour = 4; state.min = 26; state.showSeconds = false;
+          state.hour = 4; state.min = 26; state.sec = 56;
         } else if (state.version === 2) {
-          state.hour = 7; state.min = 7; state.showSeconds = false;
+          state.hour = 7; state.min = 7; state.sec = 56;
         } else if (state.version === 3) {
-          state.hour = 6; state.min = 59; state.sec = 56; state.showSeconds = true;
+          state.hour = 6; state.min = 59; state.sec = 56;
         }
+        state.showSeconds = true;
         document.getElementById('inputHour').value = state.hour;
         document.getElementById('inputMin').value = state.min;
         document.getElementById('inputSec').value = state.sec;
@@ -817,6 +829,12 @@
     document.getElementById('showSecondsCheck').addEventListener('change', (e) => {
       state.showSeconds = e.target.checked;
       renderClock();
+    });
+    document.querySelectorAll('input[name="secSepRadio"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        state.secSep = e.target.value;
+        renderClock();
+      });
     });
     document.getElementById('blinkColonCheck').addEventListener('change', (e) => {
       state.blinkColon = e.target.checked;
@@ -953,6 +971,7 @@
       const sStr = String(s).padStart(2, '0');
       const colonVisible = !state.blinkColon || (s % 2 === 0);
       const colon = colonVisible ? ':' : ' ';
+      const secPrefix = state.secSep === 'colon' ? ':' : '.';
 
       // 3. 좌표 및 배율 계산
       const x = (state.posX / 100) * width;
@@ -978,8 +997,8 @@
           const mainWidth = ctx.measureText(mainText).width;
           ctx.font = `900 ${Math.round(65 * baseScale)}px "BetaflightLarge", "Orbitron", sans-serif`;
           ctx.lineWidth = 10 * baseScale;
-          ctx.strokeText(`.${sStr}`, mainWidth + (10 * baseScale), 35 * baseScale);
-          ctx.fillText(`.${sStr}`, mainWidth + (10 * baseScale), 35 * baseScale);
+          ctx.strokeText(`${secPrefix}${sStr}`, mainWidth + (10 * baseScale), 35 * baseScale);
+          ctx.fillText(`${secPrefix}${sStr}`, mainWidth + (10 * baseScale), 35 * baseScale);
         }
 
       } else if (state.version === 2) {
@@ -996,16 +1015,15 @@
 
         if (state.showSeconds) {
           const mainWidth = ctx.measureText(mainText).width;
-          ctx.font = `700 ${Math.round(55 * baseScale)}px "BetaflightDigital", "Chakra Petch", monospace`;
+          ctx.font = `700 ${Math.round(60 * baseScale)}px "BetaflightDigital", "Chakra Petch", monospace`;
           ctx.lineWidth = 6 * baseScale;
           ctx.fillStyle = '#67e8f9';
-          ctx.strokeText(`.${sStr}`, mainWidth + (10 * baseScale), 40 * baseScale);
-          ctx.fillText(`.${sStr}`, mainWidth + (10 * baseScale), 40 * baseScale);
+          ctx.strokeText(`${secPrefix}${sStr}`, mainWidth + (10 * baseScale), 38 * baseScale);
+          ctx.fillText(`${secPrefix}${sStr}`, mainWidth + (10 * baseScale), 38 * baseScale);
         }
 
       } else if (state.version === 3) {
         // 스타일 3 캔버스 렌더링 (사진 3: 17(日) 6:59.56 모닝 뉴스 지코쿠)
-        // 상단 날짜 및 요일은 서초돋움(SeochoDotum)으로 렌더링
         ctx.font = `700 ${Math.round(42 * baseScale)}px "SeochoDotum", "Noto Sans KR", sans-serif`;
         ctx.lineWidth = 8 * baseScale;
         ctx.strokeStyle = '#000000';
@@ -1029,8 +1047,8 @@
           const mainWidth = ctx.measureText(mainText).width;
           ctx.font = `900 ${Math.round(72 * baseScale)}px "BetaflightLarge", "Noto Sans KR", sans-serif`;
           ctx.lineWidth = 10 * baseScale;
-          ctx.strokeText(`.${sStr}`, mainWidth + (6 * baseScale), timeY + (20 * baseScale));
-          ctx.fillText(`.${sStr}`, mainWidth + (6 * baseScale), timeY + (20 * baseScale));
+          ctx.strokeText(`${secPrefix}${sStr}`, mainWidth + (6 * baseScale), timeY + (20 * baseScale));
+          ctx.fillText(`${secPrefix}${sStr}`, mainWidth + (6 * baseScale), timeY + (20 * baseScale));
         }
       }
 
